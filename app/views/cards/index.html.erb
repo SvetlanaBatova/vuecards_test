@@ -1,0 +1,16 @@
+<div id="app">
+
+  <vue-cardstable-pagination ref="pagination" @vue-cardstable-pagination:change-page="onChangePage"></vue-cardstable-pagination>
+  <vue-cardstable-sort :sort_fields="sortFields" @vue-cardstable-sort:change-sort-field="onChangeSortField" @vue-cardstable-sort:change-sort-desc="onChangeSortDesc"></vue-cardstable-sort>
+  <vue-cardstable-filter :filter_fields="filterFields" @vue-cardstable-filter:change-filter-text="onSearch"></vue-cardstable-filter>
+  <vue-cardstable  ref="vuecardstable" @vue-cardstable:pagination-data="onPaginationData" @vue-cardstable:perpage-data="onPerPageData" api_url="/api/cards" :per_page="perPage" :per_page_list="perPageList">
+    <template scope="props" slot="card">
+      <img :src="props.card.image" class="card-img-top"/>
+      <h4 class="card-title">{{ props.card.title }}</h4>
+      <p class="card-text">{{ props.card.description }}</p>
+      <a :href="props.card.link" class="btn btn-primary">Open</a>
+    </template>
+  </vue-cardstable>
+
+  <vue-cardstable-pagination-dropdown ref="perpage" @vue-cardstable-pagination-dropdown:change-perpage="onChangePerPage"></vue-cardstable-pagination-dropdown>
+</div>
