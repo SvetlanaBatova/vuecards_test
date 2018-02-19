@@ -1,12 +1,14 @@
 module Api
   class CardsController < ApplicationController
     def index
-      cards = Card.all.order(:orderN)
+      cards = Card.all
       if params["filterField"] != ''
         cards = cards.where("#{params['filterField']} LIKE ?","%#{params['filterText']}%")
       end
       if params["sortField"] != ''
         cards = (params["sortDesc"] == "true" ? cards.order("#{params["sortField"]} DESC") : cards.order(params["sortField"]))
+      else
+        cards = cards.order(:orderN)
       end
       res = {}
       res["perPage"] = Integer(params[:perPage])

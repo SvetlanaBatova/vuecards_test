@@ -29,6 +29,11 @@
       </nav>
     </template>
   </vue-cardstable-pagination>
+
+  <div class="mb-3">
+    <button class="btn btn-default" @click="getSelected">Log selected</button>
+  </div>
+
   <vue-cardstable-sort :sort_fields="sortFields"
                        @vue-cardstable-sort:change-sort-field="onChangeSortField"
                        @vue-cardstable-sort:change-sort-desc="onChangeSortDesc">
@@ -70,7 +75,8 @@
                   @vue-cardstable:pagination-data="onPaginationData"
                   @vue-cardstable:perpage-data="onPerPageData"
                   @vue-cardstable:element-moved="onElementMoved"
-                  api_url="/api/cards"
+                  @vue-cardstable:element-selection-changed="onElementSelectionChanged"
+                  @vue-cardstable:reload="onReload"
                   card_class="col-3 mt-5 card-class"
                   card_container_class="row card-container-class"
                   cards_class="container cards-class"
