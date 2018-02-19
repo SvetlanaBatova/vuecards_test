@@ -1,3 +1,66 @@
-// Place all the styles related to the Cards controller here.
-// They will automatically be included in application.css.
-// You can use Sass (SCSS) here: http://sass-lang.com/
+.cards-class {
+  font-size: 0px;
+}
+
+.card-container-class {
+  display: inline-block;
+  margin: 5px;
+}
+
+.card-class {
+  display: flex;
+  flex-flow: column;
+  width: 150px;
+  height: 300px;
+  overflow: hidden;
+  border: solid 1px #ddd;
+  border-radius: 5px;
+}
+
+.card-class-selected {
+  display: flex;
+  flex-flow: column;
+  width: 150px;
+  height: 300px;
+  overflow: hidden;
+  border: solid 2px #aaf;
+  border-radius: 5px;
+}
+
+.card-class div {
+  flex: 1 1 auto;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+
+.card-class-selected div {
+  flex: 1 1 auto;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+
+.card-class h1,p {
+  flex: 0 0 auto;
+}
+
+.card-class-selected h1,p {
+  flex: 0 0 auto;
+}
+
+.card-class h1 {
+  font-size: 14px;
+}
+
+.card-class-selected h1 {
+  font-size: 14px;
+}
+
+.card-class p {
+  font-size: 10px;
+}
+
+.card-class-selected p {
+  font-size: 10px;
+}

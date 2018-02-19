@@ -2,10 +2,16 @@ $ ->
   new Vue({
     el: '#app',
     data: {
-      perPageList: [1,2,5,10],
-      sortFields: ['title','id'],
-      filterFields: ['title','id','description'],
-      perPage: 2
+      perPageList: [1,2,5,10]
+      sortFields: ['title','id']
+      filterFields: ['title','id','description']
+      perPage: 5
+      filterField: ''
+      filterText: ''
+      sortField: ''
+      sortDesc: false
+      cardWidth: 270
+      cardHeight: 350
     }
     methods: {
       onPaginationData: (paginationData) ->
@@ -22,5 +28,12 @@ $ ->
         this.$refs.perpage.setPerPageData(perPageData)
       onSearch: (searchData) ->
         this.$refs.vuecardstable.search(searchData)
+      onElementMoved: (e, new_position) ->
+        self = this
+        data = {}
+        data['e'] = e.id;
+        data['new_position'] = new_position.id;
+        $.ajax(url: "/api/cards/element_moved", data:data).done ->
+          self.$refs.vuecardstable.reload()
     }
   })

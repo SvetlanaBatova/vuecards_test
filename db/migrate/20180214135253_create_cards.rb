@@ -4,6 +4,7 @@ class CreateCards < ActiveRecord::Migration[5.1]
       t.string :title
       t.string :image
       t.string :description
+      t.integer :orderN
 
       t.timestamps
     end

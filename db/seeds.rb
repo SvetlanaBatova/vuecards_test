@@ -7,10 +7,9 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 i = 1
 while i < 100
-  Card.create!(title: "title#{i}", image: 'https://wallpaperbrowse.com/media/images/gecko-2299365_960_720.jpg', description: "It is a long long long description number #{i}")
-  Card.create!(title: "title#{i + 1}", image: 'https://wallpaperbrowse.com/media/images/p0585f4a.jpg', description: "It is a long long long description number #{i + 1}")
-  Card.create!(title: "title#{i + 2}", image: 'https://wallpaperbrowse.com/media/images/pexels-photo-340742.jpeg', description: "It is a long long long description number #{i + 2}")
-  Card.create!(title: "title#{i + 3}", image: 'https://wallpaperbrowse.com/media/images/aE3uhPPr.jpg', description: "It is a long long long description number #{i + 3}")
-  Card.create!(title: "title#{i + 4}", image: 'https://wallpaperbrowse.com/media/images/nature-images-28.jpg', description: "It is a long long long description number #{i + 4}")
-  i = i + 5
+  Card.create!(title: "title#{i}", image: '1.jpg', description: "It is a long long long description number #{i}", orderN: i)
+  Card.create!(title: "title#{i + 1}", image: '2.jpg', description: "It is a long long long description number #{i + 1}", orderN: (i+1))
+  Card.create!(title: "title#{i + 2}", image: '3.jpg', description: "It is a long long long description number #{i + 2}", orderN: (i+2))
+  Card.create!(title: "title#{i + 3}", image: '4.jpg', description: "It is a long long long description number #{i + 3}", orderN: (i+3))
+  i = i + 4
 end

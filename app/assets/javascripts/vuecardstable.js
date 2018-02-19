@@ -1,6 +1,6 @@
 Vue.component('vue-cardstable', {
-    template: '<div class="container"><div class="row"><div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch" v-for="vuecard in vuecards"><div class="card w-100 mt-2"><slot name="card" :card="vuecard"></slot></div></div></div></div>',
-    props: ['api_url','per_page','per_page_list'],
+    template: '<div :class="cards_class"><div :class="card_container_class"><div v-for="(vuecard,i) in vuecards_all" :class="vuecard.card_class"  @mousedown="startMoveCard($event, i)" @mousemove="i != vuecards.length && moveCard($event, i)" @mouseup="stopMoveCard($event, i)" :style="{opacity: vuecard.opacity, position: vuecard.position, left: vuecard.x + vuecard.dx + \'px\', top: vuecard.y + vuecard.dy + \'px\', width: card_width + \'px\', height: card_height + \'px\'}"><slot name="card" :card="vuecard"></slot></div></div></div>',
+    props: ['api_url','per_page','per_page_list','cards_class','card_container_class','card_class','card_class_selected','card_width','card_height'],
     data: function () {
         return {
             currentPage: 1,
@@ -12,14 +12,28 @@ Vue.component('vue-cardstable', {
             sortDesc: false,
             filterField: '',
             filterText: '',
-            vuecards: []
+            vuecards: [],
+            current_vuecard: [],
+            current_i: null,
+            current_replaced: null
+        }
+    },
+    computed: {
+        vuecards_all: function () {
+            return this.vuecards.concat(this.current_vuecard)
         }
     },
     methods: {
         reload: function () {
             self = this;
             $.get(this.api_url + "?currentPage=" + self.currentPage + "&perPage=" + self.perPage + "&sortField=" + self.sortField + "&sortDesc=" + self.sortDesc + "&filterField=" + self.filterField + "&filterText=" + self.filterText).done (function (res) {
+
                 self.vuecards = res.data;
+                i = 0;
+                for (card in self.vuecards) {
+                    Vue.set(self.vuecards[i], 'card_class', self.card_class);
+                    i = i + 1;
+                }
                 paginationData = {};
                 paginationData['currentPage'] = self.currentPage;
                 paginationData['maxPages'] = res.maxPages;
@@ -30,6 +44,56 @@ Vue.component('vue-cardstable', {
                 perPageData['perPageList'] = self.perPageList;
                 self.$emit('vue-cardstable:perpage-data',perPageData);
             })
+        },
+        disableSelection: function () {
+            return false
+        },
+        startMoveCard: function (e, i) {
+            if (this.vuecards[i].card_class == this.card_class)
+                this.vuecards[i].card_class = this.card_class_selected;
+            else
+                this.vuecards[i].card_class = this.card_class;
+            this.disableSelection();
+            document.onselectstart = new Function ("return false");
+            this.current_i = i;
+            this.current_replaced = i;
+            this.current_vuecard = Object.assign({}, this.vuecards[i]);
+            this.current_vuecard.mouseX = e.clientX + $(document).scrollLeft();
+            this.current_vuecard.mouseY = e.clientY + $(document).scrollTop();
+            this.current_vuecard.dx = 0;
+            this.current_vuecard.dy = 0;
+            this.current_vuecard.x = e.clientX + $(document).scrollLeft() - this.card_width / 2;
+            this.current_vuecard.y = e.clientY + $(document).scrollTop() - this.card_height / 2;
+            this.current_vuecard.position = 'absolute';
+            this.current_vuecard.isMouseDown = true;
+            Vue.set(this.vuecards[i], 'opacity', 0.3);
+        },
+        moveCard: function (e, i) {
+            if (!this.current_vuecard.isMouseDown)
+                return;
+            v = this.current_vuecard;
+            v.dx = e.clientX + $(document).scrollLeft() - this.current_vuecard.mouseX;
+            v.dy = e.clientY + $(document).scrollTop() - this.current_vuecard.mouseY;
+            this.current_vuecard = v;
+            if (this.current_replaced != i) {
+                el = this.vuecards[this.current_replaced];
+                this.vuecards.splice(this.current_replaced, 1);
+                this.vuecards.splice(i, 0, el);
+                this.current_replaced = i;
+            }
+        },
+        stopMoveCard: function (e, i) {
+            this.current_vuecard.isMouseDown = false;
+            this.enableSelection();
+            if (this.current_i > this.current_replaced)
+                self.$emit('vue-cardstable:element-moved', Object.assign({}, this.current_vuecard), Object.assign({}, this.vuecards_all[this.current_replaced + 1]));
+            else if (this.current_i < this.current_replaced)
+                self.$emit('vue-cardstable:element-moved', Object.assign({}, this.current_vuecard), Object.assign({}, this.vuecards_all[this.current_replaced - 1]));
+            this.current_vuecard = [];
+            Vue.set(this.vuecards[this.current_replaced], 'opacity',1);
+        },
+        enableSelection: function () {
+            return true
         },
         changePage: function (page) {
             this.currentPage = page;
@@ -63,7 +127,7 @@ Vue.component('vue-cardstable', {
 })
 
 Vue.component('vue-cardstable-pagination', {
-    template: '<nav><ul class="pagination justify-content-center"><li class="page-item" v-bind:class="{\'disabled\': (currentPage == 1)}"><a class="page-link" @click="goToFirst"><span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span></a></li><li class="page-item" v-bind:class="{\'disabled\': (currentPage == 1)}"><a class="page-link" @click="goToPrev">&lsaquo;</a></li><li class="page-item" v-for="page in pages" v-bind:class="{\'active\': page == currentPage}"><a class="page-link" @click="goToPage(page)">{{ page }}</a></li><li class="page-item" v-bind:class="{\'disabled\': (currentPage == maxPages)}"><a class="page-link" @click="goToNext">&rsaquo;</a></li><li class="page-item" v-bind:class="{\'disabled\': (currentPage == maxPages)}"><a class="page-link" @click="goToLast"><span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span></a></li></ul></nav>',
+    template: '<div><slot name="card_pagination" :pages="pages" :currentPage="currentPage" :maxPages="maxPages" :goToFirst="goToFirst" :goToLast="goToLast" :goToPrev="goToPrev" :goToNext="goToNext" :goToPage="goToPage"></slot></div>',
     data: function () {
         return {
             pages: [1],
@@ -105,7 +169,7 @@ Vue.component('vue-cardstable-pagination', {
 })
 
 Vue.component('vue-cardstable-pagination-dropdown', {
-    template: '<div class="form-group"><select class="form-control" @change="changePerPage" v-model="perPage"><option v-for="perPage in perPageList">{{ perPage }}</option></select></div>',
+    template: '<div><slot name="card_pagination_dropdown" :perPage="perPage" :perPageList="perPageList" :changePerPage="changePerPage"></slot></div>',
     data: function () {
         return {
             perPage: null,
@@ -113,8 +177,8 @@ Vue.component('vue-cardstable-pagination-dropdown', {
         }
     },
     methods: {
-        changePerPage: function () {
-            this.$emit('vue-cardstable-pagination-dropdown:change-perpage',this.perPage);
+        changePerPage: function (perPage) {
+            this.$emit('vue-cardstable-pagination-dropdown:change-perpage',perPage);
         },
         setPerPageData: function (perPageData) {
             this.perPage = perPageData['perPage'];
@@ -124,36 +188,22 @@ Vue.component('vue-cardstable-pagination-dropdown', {
 })
 
 Vue.component('vue-cardstable-sort', {
-    template: '<div class="form-group"><div class="checkbox"><label><input type="checkbox" v-model="sortDesc" @click="changeSortDesc">Reverse order</label></div><select class="form-control" @change="changeSortField" v-model="field"><option v-for="field in sort_fields">{{ field }}</option></select></div>',
-    props: ['sort_fields'],
-    data: function () {
-        return {
-            field: '',
-            sortDesc: false
-        }
-    },
+    template: '<div><slot name="card_sort" :changeSortField="changeSortField" :changeSortDesc="changeSortDesc"></slot></div>',
     methods: {
-        changeSortField: function () {
-            this.$emit('vue-cardstable-sort:change-sort-field',this.field);
+        changeSortField: function (field) {
+            this.$emit('vue-cardstable-sort:change-sort-field',field);
         },
-        changeSortDesc: function () {
-            this.$emit('vue-cardstable-sort:change-sort-desc',this.sortDesc);
+        changeSortDesc: function (sortDesc) {
+            this.$emit('vue-cardstable-sort:change-sort-desc',sortDesc);
         }
     }
 })
 
 Vue.component('vue-cardstable-filter', {
-    template: '<div class="form-group"><select class="form-control" v-model="field"><option v-for="field in filter_fields">{{ field }}</option></select><input type="text" v-model="filterText" class="form-control" placeholder="Search for..."><button class="btn btn-default" @click="search">Search</button></div>',
-    props: ['filter_fields'],
-    data: function () {
-        return {
-            field: '',
-            filterText: ''
-        }
-    },
+    template: '<div><slot name="card_filter" :search="search"></slot></div>',
     methods: {
-        search: function () {
-            this.$emit('vue-cardstable-filter:change-filter-text',{'filterText': this.filterText, 'filterField': this.field});
+        search: function (field, filterText) {
+            this.$emit('vue-cardstable-filter:change-filter-text',{'filterText': filterText, 'filterField': field});
         }
     }
 })

@@ -1,16 +1,90 @@
 <div id="app">
 
-  <vue-cardstable-pagination ref="pagination" @vue-cardstable-pagination:change-page="onChangePage"></vue-cardstable-pagination>
-  <vue-cardstable-sort :sort_fields="sortFields" @vue-cardstable-sort:change-sort-field="onChangeSortField" @vue-cardstable-sort:change-sort-desc="onChangeSortDesc"></vue-cardstable-sort>
-  <vue-cardstable-filter :filter_fields="filterFields" @vue-cardstable-filter:change-filter-text="onSearch"></vue-cardstable-filter>
-  <vue-cardstable  ref="vuecardstable" @vue-cardstable:pagination-data="onPaginationData" @vue-cardstable:perpage-data="onPerPageData" api_url="/api/cards" :per_page="perPage" :per_page_list="perPageList">
+  <vue-cardstable-pagination ref="pagination" @vue-cardstable-pagination:change-page="onChangePage">
+    <template scope="props" slot="card_pagination">
+      <nav>
+        <ul class="pagination justify-content-center">
+          <li class="page-item" :class="{'disabled': (props.currentPage == 1)}">
+            <a class="page-link" @click="props.goToFirst">
+              <span aria-hidden="true">&laquo;</span>
+              <span class="sr-only">Previous</span>
+            </a>
+          </li>
+          <li class="page-item" :class="{'disabled': (props.currentPage == 1)}">
+            <a class="page-link" @click="props.goToPrev">&lsaquo;</a>
+          </li>
+          <li class="page-item" v-for="page in props.pages" :class="{'active': page == props.currentPage}">
+            <a class="page-link" @click="props.goToPage(page)">{{ page }}</a>
+          </li>
+          <li class="page-item" :class="{'disabled': (props.currentPage == props.maxPages)}">
+            <a class="page-link" @click="props.goToNext">&rsaquo;</a>
+          </li>
+          <li class="page-item" :class="{'disabled': (props.currentPage == props.maxPages)}">
+            <a class="page-link" @click="props.goToLast">
+              <span aria-hidden="true">&raquo;</span>
+              <span class="sr-only">Next</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </template>
+  </vue-cardstable-pagination>
+  <vue-cardstable-sort :sort_fields="sortFields"
+                       @vue-cardstable-sort:change-sort-field="onChangeSortField"
+                       @vue-cardstable-sort:change-sort-desc="onChangeSortDesc">
+    <template scope="props" slot="card_sort">
+      <div class="form-group">
+        <select class="form-control" @change="props.changeSortField(sortField)" v-model="sortField" style="width: 15%;float: left;">
+          <option v-for="field in sortFields">{{ field }}</option>
+        </select>
+        <label class="ml-2 mt-2">
+          <input type="checkbox" v-model="sortDesc" @click="props.changeSortDesc(sortDesc)">Reverse order
+        </label>
+      </div>
+    </template>
+  </vue-cardstable-sort>
+  <vue-cardstable-filter :filter_fields="filterFields"
+                         @vue-cardstable-filter:change-filter-text="onSearch">
+    <template scope="props" slot="card_filter">
+      <div class="form-group">
+        <select class="form-control" v-model="filterField" style="width: 15%;float: left;">
+          <option v-for="field in filterFields">{{ field }}</option>
+        </select>
+        <input type="text" v-model="filterText" class="form-control ml-2" placeholder="Search for..." style="width: 15%;float: left;">
+        <button class="btn btn-default ml-2" @click="props.search(filterField, filterText)">Search</button>
+      </div>
+    </template>
+  </vue-cardstable-filter>
+
+  <vue-cardstable-pagination-dropdown ref="perpage" @vue-cardstable-pagination-dropdown:change-perpage="onChangePerPage">
+    <template scope="props" slot="card_pagination_dropdown">
+      <div class="form-group">
+        <select class="form-control" @change="props.changePerPage(props.perPage)" v-model="props.perPage" style="width: 15%;float: left;">
+          <option v-for="perPage in props.perPageList">{{ perPage }}</option>
+        </select>
+      </div>
+    </template>
+  </vue-cardstable-pagination-dropdown>
+
+  <vue-cardstable ref="vuecardstable"
+                  @vue-cardstable:pagination-data="onPaginationData"
+                  @vue-cardstable:perpage-data="onPerPageData"
+                  @vue-cardstable:element-moved="onElementMoved"
+                  api_url="/api/cards"
+                  card_class="col-3 mt-5 card-class"
+                  card_container_class="row card-container-class"
+                  cards_class="container cards-class"
+                  card_class_selected="col-3 mt-5 card-class-selected"
+                  :per_page="perPage"
+                  :per_page_list="perPageList"
+                  :card_width="cardWidth"
+                  :card_height="cardHeight">
     <template scope="props" slot="card">
-      <img :src="props.card.image" class="card-img-top"/>
+      <div :style="'background-image: url(' + props.card.image_url + ');'"></div>
       <h4 class="card-title">{{ props.card.title }}</h4>
       <p class="card-text">{{ props.card.description }}</p>
       <a :href="props.card.link" class="btn btn-primary">Open</a>
     </template>
   </vue-cardstable>
 
-  <vue-cardstable-pagination-dropdown ref="perpage" @vue-cardstable-pagination-dropdown:change-perpage="onChangePerPage"></vue-cardstable-pagination-dropdown>
 </div>
