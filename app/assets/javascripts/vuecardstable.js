@@ -1,5 +1,5 @@
 Vue.component('vue-cardstable', {
-    template: '<div :class="cards_class"><div :class="card_container_class"><div v-for="(vuecard,i) in vuecards_all" :class="vuecard.card_class" @contextmenu="selectOne($event)"  @mousedown="startMoveCard($event, i)" @mousemove="i != vuecards.length && moveCard($event, i)" @mouseup="stopMoveCard($event, i)" :style="{opacity: vuecard.opacity, position: vuecard.position, left: vuecard.x + vuecard.dx + \'px\', top: vuecard.y + vuecard.dy + \'px\', width: card_width + \'px\', height: card_height + \'px\'}"><slot name="card" :card="vuecard"></slot></div></div></div>',
+    template: '<div :class="cards_class"><div :class="card_container_class"><div v-for="(vuecard,i) in vuecards.concat(currentVuecard)" :class="vuecard.card_class" @contextmenu="selectOne($event)"  @mousedown="startMoveCard($event, i)" @mousemove="i != vuecards.length && moveCard($event, i)" @mouseup="stopMoveCard($event, i)" :style="{opacity: vuecard.opacity, position: vuecard.position, left: vuecard.x + vuecard.dx + \'px\', top: vuecard.y + vuecard.dy + \'px\', width: card_width + \'px\', height: card_height + \'px\'}"><slot name="card" :card="vuecard"></slot></div></div></div>',
     props: ['per_page','per_page_list','cards_class','card_container_class','card_class','card_class_selected','card_width','card_height'],
     data: function () {
         return {
@@ -18,11 +18,6 @@ Vue.component('vue-cardstable', {
             currentReplaced: null,
             prevScrollTop: null,
             prevScrollLeft: null
-        }
-    },
-    computed: {
-        vuecards_all: function () {
-            return this.vuecards.concat(this.currentVuecard)
         }
     },
     methods: {
@@ -118,6 +113,7 @@ Vue.component('vue-cardstable', {
                 this.vuecards.splice(i, 0, el);
                 this.currentReplaced = i;
             }
+            this.$forceUpdate();
         },
         stopMoveCard: function (e, i) {
             if (e.which != 1)
@@ -127,9 +123,9 @@ Vue.component('vue-cardstable', {
                 return;
             this.currentVuecard.isMouseDown = false;
             if (this.currentI > this.currentReplaced)
-                this.$emit('vue-cardstable:element-moved', Object.assign({}, this.currentVuecard), Object.assign({}, this.vuecards_all[this.currentReplaced + 1]));
+                this.$emit('vue-cardstable:element-moved', Object.assign({}, this.currentVuecard), Object.assign({}, this.vuecards.concat(this.currentVuecard)[this.currentReplaced + 1]));
             else if (this.currentI < this.currentReplaced)
-                this.$emit('vue-cardstable:element-moved', Object.assign({}, this.currentVuecard), Object.assign({}, this.vuecards_all[this.currentReplaced - 1]));
+                this.$emit('vue-cardstable:element-moved', Object.assign({}, this.currentVuecard), Object.assign({}, this.vuecards.concat(this.currentVuecard)[this.currentReplaced - 1]));
             this.currentVuecard = [];
             Vue.set(this.vuecards[this.currentReplaced], 'opacity',1);
         },
